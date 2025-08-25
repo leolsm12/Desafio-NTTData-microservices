@@ -8,10 +8,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Data
-@Entity
 @NoArgsConstructor
 @AllArgsConstructor
+@Entity
 public class Product {
 
     @Id
@@ -20,5 +22,7 @@ public class Product {
 
     private String name;
     private String description;
-    private Double price;
+    private BigDecimal price;
+    private Integer quantity;
+
 }

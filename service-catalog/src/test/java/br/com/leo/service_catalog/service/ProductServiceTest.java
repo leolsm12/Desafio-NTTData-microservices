@@ -8,6 +8,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -33,8 +34,8 @@ public class ProductServiceTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
 
-        product1 = new Product(1L, "Notebook Dell", "Dell Inspiron 15", 4500.0);
-        product2 = new Product(2L, "Mouse Logitech", "Mouse sem fio", 150.0);
+        product1 = new Product(1L, "Notebook Dell", "Dell Inspiron 15", BigDecimal.valueOf(4500.0), 10);
+        product2 = new Product(2L, "Mouse Logitech", "Mouse sem fio", BigDecimal.valueOf(150.0), 50);
     }
 
     @Test
@@ -68,7 +69,7 @@ public class ProductServiceTest {
 
     @Test
     void testUpdate() {
-        Product updatedProduct = new Product(null, "Notebook Dell Atualizado", "Descrição nova", 5000.0);
+        Product updatedProduct = new Product(null, "Notebook Dell Atualizado", "Descrição nova", BigDecimal.valueOf(5000.0), 10);
 
         when(repository.findById(1L)).thenReturn(Optional.of(product1));
         when(repository.save(any(Product.class))).thenReturn(updatedProduct);

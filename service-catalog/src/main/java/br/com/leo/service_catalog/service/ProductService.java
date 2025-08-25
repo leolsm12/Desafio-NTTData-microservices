@@ -37,6 +37,7 @@ public class ProductService {
             existing.setName(product.getName());
             existing.setDescription(product.getDescription());
             existing.setPrice(product.getPrice());
+            existing.setQuantity(product.getQuantity());
             return repository.save(existing);
         }).orElseThrow(() -> new RuntimeException("Product not found"));
     }

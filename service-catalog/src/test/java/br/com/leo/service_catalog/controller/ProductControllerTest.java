@@ -11,6 +11,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Optional;
 
@@ -38,7 +39,7 @@ public class ProductControllerTest {
 
     @BeforeEach
     void setUp() {
-        product1 = new Product(1L, "Notebook Dell", "Dell Inspiron 15", 4500.0);
+        product1 = new Product(1L, "Notebook Dell", "Dell Inspiron 15", BigDecimal.valueOf(4500.0), 10);
     }
 
     @Test
@@ -78,7 +79,7 @@ public class ProductControllerTest {
 
     @Test
     void testUpdateProduct() throws Exception {
-        Product updatedProduct = new Product(null, "Notebook Dell Atualizado", "Descrição nova", 5000.0);
+        Product updatedProduct = new Product(null, "Notebook Dell Atualizado", "Descrição nova", BigDecimal.valueOf(5000.0), 15);
         when(productService.update(eq(1L), any(Product.class))).thenReturn(updatedProduct);
 
         mockMvc.perform(put("/products/1")
