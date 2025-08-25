@@ -3,9 +3,11 @@ package br.com.leo.service_order.service;
 import br.com.leo.service_order.model.Order;
 import br.com.leo.service_order.model.OrderItem;
 import br.com.leo.service_order.repository.OrderRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -20,23 +22,41 @@ import static org.mockito.Mockito.*;
 class OrderServiceTest {
 
     private OrderRepository orderRepository;
+    private RestTemplate restTemplate;
+    private ObjectMapper objectMapper;
     private OrderService orderService;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         orderRepository = mock(OrderRepository.class);
-        orderService = new OrderService(orderRepository);
+        restTemplate = mock(RestTemplate.class);
+        objectMapper = new ObjectMapper();
+
+        orderService = new OrderService(orderRepository, restTemplate, objectMapper);
+
+        // Mockando a resposta da API externa para qualquer produto
+        String productJson = """
+                {
+                    "id": 1,
+                    "name": "Produto Teste",
+                    "description": "Descrição teste",
+                    "price": 10.00,
+                    "stock": 100
+                }
+                """;
+        when(restTemplate.getForObject(anyString(), eq(String.class), any(Long.class)))
+                .thenReturn(productJson);
     }
 
     @Test
     void create_ShouldCalculateLineTotalsAndOrderTotal_AndSaveOrder() {
         // Arrange
         OrderItem item1 = new OrderItem();
-        item1.setPriceAtOrder(new BigDecimal("10.00"));
+        item1.setProductId(1L);
         item1.setQuantity(2);
 
         OrderItem item2 = new OrderItem();
-        item2.setPriceAtOrder(new BigDecimal("5.50"));
+        item2.setProductId(2L);
         item2.setQuantity(1);
 
         Order order = new Order();
@@ -49,48 +69,40 @@ class OrderServiceTest {
 
         // Assert
         assertThat(savedOrder.getItems().get(0).getLineTotal()).isEqualByComparingTo("20.00");
-        assertThat(savedOrder.getItems().get(1).getLineTotal()).isEqualByComparingTo("5.50");
-        assertThat(savedOrder.getTotal()).isEqualByComparingTo("25.50");
+        assertThat(savedOrder.getItems().get(1).getLineTotal()).isEqualByComparingTo("10.00"); // preço do mock
+        assertThat(savedOrder.getTotal()).isEqualByComparingTo("30.00");
 
         ArgumentCaptor<Order> captor = ArgumentCaptor.forClass(Order.class);
         verify(orderRepository).save(captor.capture());
-        assertThat(captor.getValue().getTotal()).isEqualByComparingTo("25.50");
+        assertThat(captor.getValue().getTotal()).isEqualByComparingTo("30.00");
     }
 
     @Test
     void findById_ShouldReturnOrder_WhenExists() {
-        // Arrange
         Order order = new Order();
         order.setId(1L);
         when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
 
-        // Act
         Order found = orderService.findById(1L);
 
-        // Assert
         assertThat(found).isEqualTo(order);
     }
 
     @Test
     void findById_ShouldThrowException_WhenNotFound() {
-        // Arrange
         when(orderRepository.findById(99L)).thenReturn(Optional.empty());
 
-        // Act & Assert
         assertThrows(RuntimeException.class, () -> orderService.findById(99L));
     }
 
     @Test
     void findAll_ShouldReturnListOfOrders() {
-        // Arrange
         Order order1 = new Order();
         Order order2 = new Order();
         when(orderRepository.findAll()).thenReturn(List.of(order1, order2));
 
-        // Act
         List<Order> orders = orderService.findAll();
 
-        // Assert
         assertThat(orders).hasSize(2).contains(order1, order2);
     }
 }

@@ -17,6 +17,7 @@ public class OrderController {
 
     @PostMapping
     public ResponseEntity<Order> create(@RequestBody Order order) {
+        System.out.println("Chegou requisição no controller: " + order);
         Order saved = orderService.create(order);
         return ResponseEntity.created(URI.create("/orders/" + saved.getId()))
                 .body(saved);
